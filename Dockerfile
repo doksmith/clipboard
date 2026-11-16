@@ -10,8 +10,10 @@ RUN apt-get update \
 
 # Copy package manifest first so dependency installation is layer-cached
 # independently of source changes.
+# BuildKit cache mount speeds up repeated builds by caching npm packages on the host.
 COPY package.json ./
-RUN npm install
+RUN --mount=type=cache,target=/root/.npm \
+    npm install
 
 # Copy the rest of the source tree and produce the Nitro server bundle.
 COPY . .
@@ -47,6 +49,11 @@ ENV NITRO_PORT=3000
 EXPOSE 3000
 
 VOLUME ["/app/.data"]
+
+# Standard Docker healthcheck using Node 24 native fetch.
+# Compatible with Coolify, Docker Compose, Kubernetes, and container runtimes.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:' + (process.env.NITRO_PORT || 3000) + '/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", ".output/server/index.mjs"]

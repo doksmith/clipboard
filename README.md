@@ -142,6 +142,14 @@ Content-Type: application/json
 
 A new revision is created automatically.
 
+### Health check
+
+```
+GET /api/health
+```
+
+Returns `OK` with HTTP status `200`. Used by Docker, Coolify, Kubernetes, and reverse proxies for health monitoring.
+
 ### Raw content
 
 ```
@@ -165,6 +173,7 @@ clipboard/
     layouts/            Default layout with navbar and footer
     pages/              index, [id], explore, live/[room]
   server/
+    api/health/         Health check endpoint
     api/pastes/         REST endpoints
     database/           Drizzle schema and migrations
     routes/             Raw endpoint, WebSocket handler
