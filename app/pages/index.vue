@@ -5,14 +5,9 @@ import {
   Trash2,
   Lock,
   Flame,
-  Clock,
-  Sparkles,
   ClipboardPaste,
   Shield,
   Send,
-  Eye,
-  FileText,
-  SlidersHorizontal,
 } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import { useWebCrypto } from '~/composables/useWebCrypto'
@@ -102,7 +97,7 @@ async function pasteFromClipboard() {
       activeFile.value.content = text
       toast.success('Pasted content into active file!')
     }
-  } catch (err) {
+  } catch {
     toast.error('Clipboard permission denied by browser')
   }
 }
@@ -139,7 +134,6 @@ watch(
   },
 )
 
-// Statistics
 const totalLines = computed(() => {
   return files.value.reduce((acc, f) => acc + (f.content ? f.content.split('\n').length : 0), 0)
 })
@@ -148,7 +142,6 @@ const totalCharacters = computed(() => {
 })
 
 async function createPaste() {
-  // Validate that there is content
   const hasContent = files.value.some((f) => f.content.trim().length > 0)
   if (!hasContent) {
     toast.error('Please enter content before creating a clip')
@@ -157,7 +150,7 @@ async function createPaste() {
 
   isSubmitting.value = true
   try {
-    let payloadFiles = files.value.map((f) => ({
+    const payloadFiles = files.value.map((f) => ({
       filename: f.filename,
       content: f.content,
       syntax: f.syntax,
@@ -216,147 +209,153 @@ onMounted(() => {
     <!-- Header & Action Row -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold tracking-tight">Create Realtime Snippet</h1>
-        <p class="text-xs text-muted-foreground mt-0.5">
+        <h1 class="text-3xl font-bold tracking-tight">Create Snippet</h1>
+        <p class="text-sm text-muted-foreground mt-1">
           Paste text, share multi-file gists, or synchronize live across devices.
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <UiButton variant="outline" size="sm" class="gap-1.5 text-xs" @click="pasteFromClipboard">
-          <ClipboardPaste class="h-3.5 w-3.5" />
-          <span>Paste from Clipboard</span>
+      <div class="flex flex-wrap items-center gap-3">
+        <UiButton variant="outline" size="sm" class="gap-2" @click="pasteFromClipboard">
+          <ClipboardPaste class="h-4 w-4" />
+          <span>Paste Clipboard</span>
         </UiButton>
 
         <UiButton
           size="sm"
-          class="gap-1.5 font-semibold text-xs shadow-sm"
+          class="gap-2"
           :disabled="isSubmitting"
           @click="createPaste"
         >
-          <Send class="h-3.5 w-3.5" />
+          <Send class="h-4 w-4" />
           <span>{{ isSubmitting ? 'Publishing...' : 'Create Snippet' }}</span>
-          <UiBadge variant="secondary" class="ml-1 px-1 py-0 text-[10px] hidden sm:inline-block">Ctrl+S</UiBadge>
         </UiButton>
       </div>
     </div>
 
-    <!-- Metadata & Settings Bar -->
-    <UiCard class="p-4 shadow-xs">
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
-        <!-- Title Input -->
-        <div class="md:col-span-5 space-y-1.5">
-          <UiLabel for="paste-title" class="text-xs font-medium">Snippet Title (Optional)</UiLabel>
-          <UiInput
-            id="paste-title"
-            v-model="title"
-            placeholder="e.g. Distributed Lock implementation in TypeScript"
-            class="h-9 text-xs"
-          />
+    <!-- Semantic Metadata & Settings Card -->
+    <UiCard>
+      <UiCardHeader>
+        <UiCardTitle>Snippet Configuration</UiCardTitle>
+        <UiCardDescription>Configure title, custom slug, expiration, and privacy policies.</UiCardDescription>
+      </UiCardHeader>
+
+      <UiCardContent class="space-y-6">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-12">
+          <!-- Title Input -->
+          <div class="md:col-span-5 space-y-2">
+            <UiLabel for="paste-title">Title (Optional)</UiLabel>
+            <UiInput
+              id="paste-title"
+              v-model="title"
+              placeholder="e.g. Distributed Lock implementation in TypeScript"
+            />
+          </div>
+
+          <!-- Custom URL Slug -->
+          <div class="md:col-span-3 space-y-2">
+            <UiLabel for="custom-slug">Vanity Slug (Optional)</UiLabel>
+            <UiInput
+              id="custom-slug"
+              v-model="customSlug"
+              placeholder="auto-generated"
+              class="font-mono"
+            />
+          </div>
+
+          <!-- Visibility Selector -->
+          <div class="md:col-span-2 space-y-2">
+            <UiLabel>Visibility</UiLabel>
+            <UiSelect v-model="visibility">
+              <UiSelectTrigger class="w-full">
+                <UiSelectValue placeholder="Visibility" />
+              </UiSelectTrigger>
+              <UiSelectContent>
+                <UiSelectItem value="unlisted">Unlisted (Secret Link)</UiSelectItem>
+                <UiSelectItem value="public">Public (Explore Feed)</UiSelectItem>
+                <UiSelectItem value="private">Private</UiSelectItem>
+              </UiSelectContent>
+            </UiSelect>
+          </div>
+
+          <!-- Expiry Selector -->
+          <div class="md:col-span-2 space-y-2">
+            <UiLabel>Expiration</UiLabel>
+            <UiSelect v-model="expiresIn">
+              <UiSelectTrigger class="w-full">
+                <UiSelectValue placeholder="Expiration" />
+              </UiSelectTrigger>
+              <UiSelectContent>
+                <UiSelectItem value="never">Never</UiSelectItem>
+                <UiSelectItem value="10m">10 Minutes</UiSelectItem>
+                <UiSelectItem value="1h">1 Hour</UiSelectItem>
+                <UiSelectItem value="1d">1 Day</UiSelectItem>
+                <UiSelectItem value="7d">7 Days</UiSelectItem>
+                <UiSelectItem value="30d">30 Days</UiSelectItem>
+              </UiSelectContent>
+            </UiSelect>
+          </div>
         </div>
 
-        <!-- Custom URL Slug -->
-        <div class="md:col-span-3 space-y-1.5">
-          <UiLabel for="custom-slug" class="text-xs font-medium">Custom Vanity Slug</UiLabel>
-          <UiInput
-            id="custom-slug"
-            v-model="customSlug"
-            placeholder="auto-generated"
-            class="h-9 text-xs font-mono"
-          />
-        </div>
+        <UiSeparator />
 
-        <!-- Visibility Selector -->
-        <div class="md:col-span-2 space-y-1.5">
-          <UiLabel class="text-xs font-medium">Visibility</UiLabel>
-          <UiSelect v-model="visibility">
-            <UiSelectTrigger class="h-9 text-xs">
-              <UiSelectValue placeholder="Select visibility" />
-            </UiSelectTrigger>
-            <UiSelectContent>
-              <UiSelectItem value="unlisted">Unlisted (Secret Link)</UiSelectItem>
-              <UiSelectItem value="public">Public (Explore Feed)</UiSelectItem>
-              <UiSelectItem value="private">Private</UiSelectItem>
-            </UiSelectContent>
-          </UiSelect>
-        </div>
-
-        <!-- Expiry Selector -->
-        <div class="md:col-span-2 space-y-1.5">
-          <UiLabel class="text-xs font-medium">Expiration</UiLabel>
-          <UiSelect v-model="expiresIn">
-            <UiSelectTrigger class="h-9 text-xs">
-              <UiSelectValue placeholder="Select expiration" />
-            </UiSelectTrigger>
-            <UiSelectContent>
-              <UiSelectItem value="never">Never</UiSelectItem>
-              <UiSelectItem value="10m">10 Minutes</UiSelectItem>
-              <UiSelectItem value="1h">1 Hour</UiSelectItem>
-              <UiSelectItem value="1d">1 Day</UiSelectItem>
-              <UiSelectItem value="7d">7 Days</UiSelectItem>
-              <UiSelectItem value="30d">30 Days</UiSelectItem>
-            </UiSelectContent>
-          </UiSelect>
-        </div>
-      </div>
-
-      <!-- Advanced Toggles Collapsible -->
-      <UiCollapsible class="mt-4 border-t pt-3">
-        <div class="flex items-center justify-between">
-          <div class="flex flex-wrap items-center gap-6 text-xs">
+        <!-- Security & Advanced Toggles -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-wrap items-center gap-6">
             <!-- Burn after read -->
-            <label class="flex items-center gap-2 cursor-pointer select-none">
+            <label class="flex items-center gap-2 cursor-pointer select-none text-sm">
               <UiSwitch v-model:checked="burnAfterRead" />
-              <span class="flex items-center gap-1 font-medium">
-                <Flame class="h-3.5 w-3.5 text-orange-500" />
+              <span class="flex items-center gap-1.5 font-medium">
+                <Flame class="h-4 w-4 text-orange-500" />
                 Burn after read
               </span>
             </label>
 
             <!-- Password Protection -->
-            <label class="flex items-center gap-2 cursor-pointer select-none">
+            <label class="flex items-center gap-2 cursor-pointer select-none text-sm">
               <UiSwitch v-model:checked="isPasswordProtected" />
-              <span class="flex items-center gap-1 font-medium">
-                <Lock class="h-3.5 w-3.5 text-amber-500" />
+              <span class="flex items-center gap-1.5 font-medium">
+                <Lock class="h-4 w-4 text-amber-500" />
                 Password Protection
               </span>
             </label>
 
             <!-- Zero knowledge toggle -->
-            <label v-if="isPasswordProtected" class="flex items-center gap-2 cursor-pointer select-none">
+            <label v-if="isPasswordProtected" class="flex items-center gap-2 cursor-pointer select-none text-sm">
               <UiSwitch v-model:checked="clientEncryption" />
-              <span class="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
-                <Shield class="h-3.5 w-3.5" />
-                Client-Side AES-GCM-256
+              <span class="flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400">
+                <Shield class="h-4 w-4" />
+                Client-Side AES-GCM
               </span>
             </label>
           </div>
 
-          <div class="text-[11px] text-muted-foreground font-mono">
-            <span>{{ files.length }} file(s) &bull; {{ totalLines }} lines &bull; {{ totalCharacters }} chars</span>
-          </div>
+          <ClientOnly>
+            <div class="text-xs text-muted-foreground font-mono">
+              {{ files.length }} file(s) &bull; {{ totalLines }} lines &bull; {{ totalCharacters }} chars
+            </div>
+          </ClientOnly>
         </div>
 
         <!-- Password input field if enabled -->
-        <div v-if="isPasswordProtected" class="mt-3 max-w-sm space-y-1">
+        <div v-if="isPasswordProtected" class="max-w-sm space-y-2 pt-1">
           <UiInput
             v-model="password"
             type="password"
             placeholder="Set snippet decryption password..."
-            class="h-8 text-xs font-mono"
+            class="font-mono"
           />
-          <p class="text-[11px] text-muted-foreground">
-            {{ clientEncryption ? 'Zero-knowledge: Encrypted in your browser before upload.' : 'Verified securely by the server.' }}
+          <p class="text-xs text-muted-foreground">
+            {{ clientEncryption ? 'Zero-knowledge: Encrypted in your browser before upload.' : 'Hashed securely on the server.' }}
           </p>
         </div>
-      </UiCollapsible>
+      </UiCardContent>
     </UiCard>
 
-    <!-- Multi-File Editor Workspace -->
-    <UiCard class="overflow-hidden border shadow-sm">
+    <!-- Multi-File Editor Card -->
+    <UiCard class="overflow-hidden">
       <!-- File Tabs Header -->
-      <div class="flex items-center justify-between border-b bg-muted/40 px-2 pt-2">
-        <!-- Tabs List -->
+      <div class="flex items-center justify-between border-b bg-muted/40 px-3 pt-2">
         <div class="flex items-center gap-1 overflow-x-auto scrollbar-none pb-2">
           <button
             v-for="(file, idx) in files"
@@ -364,26 +363,25 @@ onMounted(() => {
             type="button"
             @click="activeFileIndex = idx"
             :class="[
-              'group flex items-center gap-2 rounded-t-lg border-t border-x px-3 py-1.5 text-xs font-medium transition-all shrink-0',
+              'group flex items-center gap-2 rounded-t-md border-t border-x px-4 py-2 text-xs font-medium transition-all shrink-0',
               activeFileIndex === idx
                 ? 'bg-card text-foreground border-border shadow-xs'
                 : 'bg-muted/30 text-muted-foreground border-transparent hover:bg-muted/70'
             ]"
           >
-            <FileCode class="h-3.5 w-3.5 text-primary" />
+            <FileCode class="h-4 w-4 text-primary" />
             <span>{{ file.filename || `file-${idx + 1}.txt` }}</span>
             <button
               v-if="files.length > 1"
               type="button"
-              class="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity ml-1"
+              class="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity ml-1.5"
               @click.stop="removeFile(idx)"
             >
-              <Trash2 class="h-3 w-3" />
+              <Trash2 class="h-3.5 w-3.5" />
             </button>
           </button>
 
-          <!-- Add File Button -->
-          <UiButton variant="ghost" size="sm" class="h-8 px-2 gap-1 text-xs text-muted-foreground shrink-0" @click="addFile">
+          <UiButton variant="ghost" size="sm" class="gap-1.5 text-xs text-muted-foreground shrink-0" @click="addFile">
             <Plus class="h-3.5 w-3.5" />
             <span>Add File</span>
           </UiButton>
@@ -391,43 +389,47 @@ onMounted(() => {
       </div>
 
       <!-- Active File Configuration Bar -->
-      <div v-if="activeFile" class="flex flex-wrap items-center justify-between gap-3 border-b bg-card px-4 py-2 text-xs">
-        <div class="flex flex-1 items-center gap-3 min-w-[240px]">
+      <div v-if="activeFile" class="flex flex-wrap items-center justify-between gap-4 border-b bg-card px-4 py-3">
+        <div class="flex flex-1 items-center gap-3 min-w-[280px]">
           <UiInput
             v-model="activeFile.filename"
             placeholder="Filename (e.g. handler.ts)"
-            class="h-8 max-w-[240px] text-xs font-mono"
+            class="max-w-xs font-mono text-xs"
           />
-          <UiSelect v-model="activeFile.syntax">
-            <UiSelectTrigger class="h-8 w-36 text-xs">
-              <UiSelectValue placeholder="Syntax" />
-            </UiSelectTrigger>
-            <UiSelectContent>
-              <UiSelectItem
-                v-for="lang in supportedLanguages"
-                :key="lang.value"
-                :value="lang.value"
-              >
-                {{ lang.label }}
-              </UiSelectItem>
-            </UiSelectContent>
-          </UiSelect>
+          <div class="w-48">
+            <UiSelect v-model="activeFile.syntax">
+              <UiSelectTrigger class="w-full text-xs">
+                <UiSelectValue placeholder="Syntax" />
+              </UiSelectTrigger>
+              <UiSelectContent>
+                <UiSelectItem
+                  v-for="lang in supportedLanguages"
+                  :key="lang.value"
+                  :value="lang.value"
+                >
+                  {{ lang.label }}
+                </UiSelectItem>
+              </UiSelectContent>
+            </UiSelect>
+          </div>
         </div>
 
-        <div class="flex items-center gap-3 text-muted-foreground text-[11px] font-mono">
-          <span>{{ (activeFile.content || '').split('\n').length }} lines</span>
-          <span>&bull;</span>
-          <span>{{ (activeFile.content || '').length }} chars</span>
-        </div>
+        <ClientOnly>
+          <div class="flex items-center gap-3 text-muted-foreground text-xs font-mono">
+            <span>{{ (activeFile.content || '').split('\n').length }} lines</span>
+            <span>&bull;</span>
+            <span>{{ (activeFile.content || '').length }} chars</span>
+          </div>
+        </ClientOnly>
       </div>
 
-      <!-- Editor Textarea Area -->
+      <!-- Editor Textarea -->
       <div v-if="activeFile" class="relative bg-background">
         <UiTextarea
           v-model="activeFile.content"
           placeholder="// Paste or write your code, notes, or configuration here..."
           rows="18"
-          class="w-full resize-y rounded-none border-0 font-mono text-xs leading-relaxed p-4 focus-visible:ring-0 focus-visible:outline-none min-h-[360px]"
+          class="w-full resize-y rounded-none border-0 font-mono text-xs leading-relaxed p-4 focus-visible:ring-0 focus-visible:outline-none min-h-[380px]"
           spellcheck="false"
         />
       </div>

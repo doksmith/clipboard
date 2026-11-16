@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Share2, Copy, Check, Terminal, ExternalLink } from 'lucide-vue-next'
+import { Share2, Copy, Check, Terminal } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 
 const props = defineProps<{
@@ -12,13 +12,9 @@ const emit = defineEmits<{
   (e: 'update:open', val: boolean): void
 }>()
 
-const origin = ref('')
-onMounted(() => {
-  origin.value = window.location.origin
-})
-
-const fullUrl = computed(() => `${origin.value}/${props.slug}`)
-const rawUrl = computed(() => `${origin.value}/raw/${props.slug}`)
+const url = useRequestURL()
+const fullUrl = computed(() => `${url.origin}/${props.slug}`)
+const rawUrl = computed(() => `${url.origin}/raw/${props.slug}`)
 const curlCommand = computed(() => `curl -sL ${rawUrl.value}`)
 
 const copiedField = ref<string | null>(null)
@@ -40,13 +36,13 @@ async function copyText(text: string, field: string) {
           <span>Share Snippet</span>
         </UiDialogTitle>
         <UiDialogDescription>
-          Share this snippet via link, raw endpoint, or curl command.
+          Share this snippet via direct link, raw text endpoint, or terminal curl command.
         </UiDialogDescription>
       </UiDialogHeader>
 
       <div class="space-y-4 py-2">
         <!-- Direct URL -->
-        <div class="space-y-1.5">
+        <div class="space-y-2">
           <UiLabel class="text-xs font-medium text-muted-foreground">Direct Link</UiLabel>
           <div class="flex gap-2">
             <UiInput :model-value="fullUrl" readonly class="font-mono text-xs" />
@@ -58,7 +54,7 @@ async function copyText(text: string, field: string) {
         </div>
 
         <!-- Raw URL -->
-        <div class="space-y-1.5">
+        <div class="space-y-2">
           <UiLabel class="text-xs font-medium text-muted-foreground">Raw Text URL</UiLabel>
           <div class="flex gap-2">
             <UiInput :model-value="rawUrl" readonly class="font-mono text-xs" />
@@ -70,7 +66,7 @@ async function copyText(text: string, field: string) {
         </div>
 
         <!-- Curl Command -->
-        <div class="space-y-1.5">
+        <div class="space-y-2">
           <UiLabel class="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
             <Terminal class="h-3.5 w-3.5" />
             <span>Terminal / Curl</span>
