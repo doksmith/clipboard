@@ -11,8 +11,9 @@ RUN apt-get update \
 # Copy package manifest first so dependency installation is layer-cached
 # independently of source changes.
 # BuildKit cache mount speeds up repeated builds by caching npm packages on the host.
+# Using a dedicated id ensures the cache is strictly isolated to this project.
 COPY package.json ./
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,id=clipboard-npm,target=/root/.npm \
     npm install
 
 # Copy the rest of the source tree and produce the Nitro server bundle.
