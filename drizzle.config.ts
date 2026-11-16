@@ -1,10 +1,10 @@
 import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
-  schema: './server/database/schema.ts',
-  out: './server/database/migrations',
+  schema: './server/db/schema.ts',
+  out: './drizzle',
   dialect: 'sqlite',
   dbCredentials: {
-    url: process.env.DATABASE_URL || './.data/clipboard.db',
+    url: process.env.DATABASE_URL || '.data/clipboard.db',
   },
 })

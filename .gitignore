@@ -1,12 +1,24 @@
-# Nuxt & Build Output
-.nuxt
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Next.js & Build Output
+/.next/
+/out/
+/build
 .output
 dist
-.nitro
 .cache
 
-# Dependencies
-node_modules
+# Legacy Nuxt & Nitro
+.nuxt
+.nitro
 
 # Database & Local Persistent Data
 .data
@@ -16,19 +28,32 @@ data
 *.db-wal
 *.db-shm
 
+# Testing & Coverage
+/coverage
+
 # Environment Variables
-.env
-.env.*
+.env*
 !.env.example
 
-# Logs
+# Logs & Debug
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Editor & System Files
+# System & Misc
 .DS_Store
 Thumbs.db
 *.local
+*.pem
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Backup Directory
+bak/
