@@ -174,6 +174,17 @@ clipboard/
   nuxt.config.ts        Nuxt configuration
 ```
 
+## Docker
+
+Build and run the container image:
+
+```bash
+docker build -t clipboard .
+docker run -d -p 3000:3000 -v clipboard-data:/app/.data clipboard
+```
+
+The `-v` flag mounts a named volume so the SQLite database survives container restarts. The image uses a multi-stage build with `node:20-slim`, runs as a non-root user, and produces a minimal layer containing only the Nitro server bundle.
+
 ## Self-Hosting
 
 The application is designed to run as a single process with no external dependencies beyond Node.js. SQLite stores all data in a single file at `.data/clipboard.db`. Back up this file to preserve all snippets.
