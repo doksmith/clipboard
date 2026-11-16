@@ -49,7 +49,7 @@ All fonts are self-hosted through Fontsource packages. No external font requests
 
 ### Prerequisites
 
-- Node.js 20 or later
+- Node.js 24 recommended (minimum Node.js 22.19+)
 - pnpm 9 or later
 
 ### Install
@@ -183,7 +183,7 @@ docker build -t clipboard .
 docker run -d -p 3000:3000 -v clipboard-data:/app/.data clipboard
 ```
 
-The `-v` flag mounts a named volume so the SQLite database survives container restarts. The image uses a multi-stage build with `node:20-slim`, runs as a non-root user, and produces a minimal layer containing only the Nitro server bundle.
+The `-v` flag mounts a named volume so the SQLite database survives container restarts. The image uses a multi-stage build with `node:24-slim`, runs as a non-root user, and produces a minimal layer containing only the Nitro server bundle.
 
 ## Self-Hosting
 

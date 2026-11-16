@@ -1,5 +1,5 @@
 # ---- Build stage ----
-FROM node:20-slim AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN npm run build
 
 
 # ---- Production stage ----
-FROM node:20-slim
+FROM node:24-slim
 
 LABEL org.opencontainers.image.title="Clipboard" \
       org.opencontainers.image.description="Self-hosted realtime clipboard and code snippet hub" \
