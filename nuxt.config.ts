@@ -22,6 +22,9 @@ export default defineNuxtConfig({
     prefix: 'Ui',
     componentDir: '@/components/ui',
   },
+  build: {
+    transpile: ['@tabler/icons-vue', 'lucide-vue-next'],
+  },
   nitro: {
     experimental: {
       websocket: true,
