@@ -23,7 +23,7 @@ FROM node:20-slim
 
 LABEL org.opencontainers.image.title="Clipboard" \
       org.opencontainers.image.description="Self-hosted realtime clipboard and code snippet hub" \
-      org.opencontainers.image.source="https://github.com/dyzulk/clipboard"
+      org.opencontainers.image.source="https://github.com/doksmith/clipboard"
 
 # Create a non-root user.
 RUN groupadd --gid 1001 clipboard \

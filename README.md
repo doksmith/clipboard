@@ -55,7 +55,7 @@ All fonts are self-hosted through Fontsource packages. No external font requests
 ### Install
 
 ```bash
-git clone https://github.com/dyzulk/clipboard.git
+git clone https://github.com/doksmith/clipboard.git
 cd clipboard
 pnpm install
 ```
