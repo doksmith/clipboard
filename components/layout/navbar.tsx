@@ -3,7 +3,13 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from './theme-toggle'
-import { RiTerminalBoxLine, RiCompassLine, RiBroadcastLine, RiBookOpenLine } from '@remixicon/react'
+import {
+  RiTerminalBoxLine,
+  RiCodeSSlashLine,
+  RiCompassLine,
+  RiBroadcastLine,
+  RiBookOpenLine,
+} from '@remixicon/react'
 
 export function Navbar() {
   return (
@@ -17,6 +23,7 @@ export function Navbar() {
 
           <nav className="hidden items-center gap-2 sm:flex">
             <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/" />}>
+              <RiCodeSSlashLine className="mr-1 size-4" />
               Studio
             </Button>
             <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/explore" />}>
