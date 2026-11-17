@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { EditorTabs } from './editor-tabs'
 import { EditorToolbar } from './editor-toolbar'
-import { CodeEditor } from './code-editor'
 import { EditorStatusBar } from './editor-status-bar'
 import { EditorSettingsPanel } from './editor-settings-panel'
 import { useEditorState } from '@/hooks/use-editor-state'
@@ -15,6 +15,16 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { RiSettings3Line, RiSendPlaneLine } from '@remixicon/react'
+
+const CodeEditor = dynamic(
+  () => import('./code-editor').then((mod) => mod.CodeEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="relative min-h-[400px] flex-1 bg-muted/10 animate-pulse" />
+    ),
+  }
+)
 
 export function CodeStudio() {
   const router = useRouter()

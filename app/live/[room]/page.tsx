@@ -1,9 +1,9 @@
 'use client'
 
 import { use, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
-import { CodeEditor } from '@/components/editor/code-editor'
 import { PeerCursors } from '@/components/live/peer-cursors'
 import { LiveStatus } from '@/components/live/live-status'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,16 @@ import { useRealtimeRoom } from '@/hooks/use-realtime-room'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { RiBroadcastLine, RiCameraLine } from '@remixicon/react'
+
+const CodeEditor = dynamic(
+  () => import('@/components/editor/code-editor').then((mod) => mod.CodeEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="relative min-h-[500px] flex-1 bg-muted/10 animate-pulse" />
+    ),
+  }
+)
 
 export default function LiveRoomPage({
   params,
