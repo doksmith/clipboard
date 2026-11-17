@@ -187,12 +187,6 @@ export class PasteService {
       .orderBy(schema.pasteFiles.position)
       .all()
 
-    // Increment view count
-    db.update(schema.pastes)
-      .set({ viewCount: paste.viewCount + 1 })
-      .where(eq(schema.pastes.id, paste.id))
-      .run()
-
     // Burn after read handling
     if (paste.burnAfterRead) {
       db.delete(schema.pastes).where(eq(schema.pastes.id, paste.id)).run()
@@ -207,7 +201,7 @@ export class PasteService {
       isEncrypted: paste.isEncrypted,
       burnAfterRead: paste.burnAfterRead,
       hasPassword: Boolean(paste.passwordHash),
-      viewCount: paste.viewCount + 1,
+      viewCount: paste.viewCount,
       expiresAt: paste.expiresAt,
       createdAt: paste.createdAt,
       updatedAt: paste.updatedAt,
@@ -216,8 +210,36 @@ export class PasteService {
     }
   }
 
-  static async listPastes(query: PasteQuery): Promise<ListPastesResponse> {
+  static async incrementView(idOrSlug: string): Promise<{ success: boolean; viewCount: number }> {
     CleanupService.purgeExpiredPastes()
+    const db = getDb()
+
+    const paste = db
+      .select({ id: schema.pastes.id, viewCount: schema.pastes.viewCount, expiresAt: schema.pastes.expiresAt })
+      .from(schema.pastes)
+      .where(or(eq(schema.pastes.id, idOrSlug), eq(schema.pastes.slug, idOrSlug)))
+      .get()
+
+    if (!paste) {
+      throw ApiError.notFound('Paste not found or has expired')
+    }
+
+    if (paste.expiresAt && paste.expiresAt.getTime() < Date.now()) {
+      db.delete(schema.pastes).where(eq(schema.pastes.id, paste.id)).run()
+      throw ApiError.notFound('Paste has expired')
+    }
+
+    const nextCount = paste.viewCount + 1
+    db.update(schema.pastes)
+      .set({ viewCount: nextCount })
+      .where(eq(schema.pastes.id, paste.id))
+      .run()
+
+    return { success: true, viewCount: nextCount }
+  }
+
+  static async listPastes(query: PasteQuery): Promise<ListPastesResponse> {
+  CleanupService.purgeExpiredPastes()
     const db = getDb()
 
     const page = Math.max(1, query.page || 1)
@@ -226,38 +248,38 @@ export class PasteService {
     const search = query.q?.trim() || ''
 
     const whereConditions = [
-      eq(schema.pastes.visibility, 'public'),
-      eq(schema.pastes.burnAfterRead, false),
-    ]
+    eq(schema.pastes.visibility, 'public'),
+    eq(schema.pastes.burnAfterRead, false),
+  ]
 
-    if (search) {
-      whereConditions.push(
-        or(
-          like(schema.pastes.title, `%${search}%`),
-          like(schema.pastes.description, `%${search}%`),
-          like(schema.pastes.slug, `%${search}%`)
-        )!
-      )
-    }
+    if(search) {
+    whereConditions.push(
+      or(
+        like(schema.pastes.title, `%${search}%`),
+        like(schema.pastes.description, `%${search}%`),
+        like(schema.pastes.slug, `%${search}%`)
+      )!
+    )
+  }
 
     const items = db
-      .select({
-        id: schema.pastes.id,
-        title: schema.pastes.title,
-        slug: schema.pastes.slug,
-        description: schema.pastes.description,
-        isEncrypted: schema.pastes.isEncrypted,
-        hasPassword: sql<boolean>`${schema.pastes.passwordHash} IS NOT NULL`,
-        viewCount: schema.pastes.viewCount,
-        createdAt: schema.pastes.createdAt,
-        updatedAt: schema.pastes.updatedAt,
-      })
-      .from(schema.pastes)
-      .where(and(...whereConditions))
-      .orderBy(desc(schema.pastes.createdAt))
-      .limit(limit)
-      .offset(offset)
-      .all()
+    .select({
+      id: schema.pastes.id,
+      title: schema.pastes.title,
+      slug: schema.pastes.slug,
+      description: schema.pastes.description,
+      isEncrypted: schema.pastes.isEncrypted,
+      hasPassword: sql<boolean>`${schema.pastes.passwordHash} IS NOT NULL`,
+      viewCount: schema.pastes.viewCount,
+      createdAt: schema.pastes.createdAt,
+      updatedAt: schema.pastes.updatedAt,
+    })
+    .from(schema.pastes)
+    .where(and(...whereConditions))
+    .orderBy(desc(schema.pastes.createdAt))
+    .limit(limit)
+    .offset(offset)
+    .all()
 
     const enriched = items.map((paste) => {
       const files = db
@@ -280,50 +302,50 @@ export class PasteService {
     })
 
     return {
-      page,
-      limit,
-      items: enriched,
-    }
+    page,
+    limit,
+    items: enriched,
   }
+}
 
-  static async updatePaste(idOrSlug: string, input: UpdatePasteInput): Promise<PasteDetailResponse> {
-    const db = getDb()
+  static async updatePaste(idOrSlug: string, input: UpdatePasteInput): Promise < PasteDetailResponse > {
+  const db = getDb()
 
     const paste = db
-      .select()
-      .from(schema.pastes)
-      .where(or(eq(schema.pastes.id, idOrSlug), eq(schema.pastes.slug, idOrSlug)))
-      .get()
+    .select()
+    .from(schema.pastes)
+    .where(or(eq(schema.pastes.id, idOrSlug), eq(schema.pastes.slug, idOrSlug)))
+    .get()
 
-    if (!paste) {
-      throw ApiError.notFound('Paste not found')
-    }
+    if(!paste) {
+    throw ApiError.notFound('Paste not found')
+  }
 
     const now = new Date()
 
     // Create revision snapshot
     const existingFiles = db
-      .select()
-      .from(schema.pasteFiles)
-      .where(eq(schema.pasteFiles.pasteId, paste.id))
-      .all()
+    .select()
+    .from(schema.pasteFiles)
+    .where(eq(schema.pasteFiles.pasteId, paste.id))
+    .all()
 
     const revisionCount =
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(schema.pasteRevisions)
-        .where(eq(schema.pasteRevisions.pasteId, paste.id))
-        .get()?.count || 0
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.pasteRevisions)
+      .where(eq(schema.pasteRevisions.pasteId, paste.id))
+      .get()?.count || 0
 
     db.insert(schema.pasteRevisions)
-      .values({
-        id: nanoid(12),
-        pasteId: paste.id,
-        revisionNumber: revisionCount + 1,
-        diffPatch: JSON.stringify(existingFiles),
-        createdAt: now,
-      })
-      .run()
+    .values({
+      id: nanoid(12),
+      pasteId: paste.id,
+      revisionNumber: revisionCount + 1,
+      diffPatch: JSON.stringify(existingFiles),
+      createdAt: now,
+    })
+    .run()
 
     // Remove existing files and replace with updated set
     db.delete(schema.pasteFiles).where(eq(schema.pasteFiles.pasteId, paste.id)).run()
@@ -362,85 +384,85 @@ export class PasteService {
 
     // Update main paste metadata
     db.update(schema.pastes)
-      .set({
-        title: input.title !== undefined ? input.title : paste.title,
-        description: input.description !== undefined ? input.description : paste.description,
-        updatedAt: now,
-      })
-      .where(eq(schema.pastes.id, paste.id))
-      .run()
+    .set({
+      title: input.title !== undefined ? input.title : paste.title,
+      description: input.description !== undefined ? input.description : paste.description,
+      updatedAt: now,
+    })
+    .where(eq(schema.pastes.id, paste.id))
+    .run()
 
     return {
-      id: paste.id,
-      title: input.title !== undefined ? input.title : paste.title,
-      slug: paste.slug,
-      description: input.description !== undefined ? input.description : paste.description,
-      visibility: paste.visibility,
-      isEncrypted: paste.isEncrypted,
-      burnAfterRead: paste.burnAfterRead,
-      hasPassword: Boolean(paste.passwordHash),
-      viewCount: paste.viewCount,
-      expiresAt: paste.expiresAt,
-      createdAt: paste.createdAt,
-      updatedAt: now,
-      files: updatedFiles,
-      requiresPassword: false,
-    }
+    id: paste.id,
+    title: input.title !== undefined ? input.title : paste.title,
+    slug: paste.slug,
+    description: input.description !== undefined ? input.description : paste.description,
+    visibility: paste.visibility,
+    isEncrypted: paste.isEncrypted,
+    burnAfterRead: paste.burnAfterRead,
+    hasPassword: Boolean(paste.passwordHash),
+    viewCount: paste.viewCount,
+    expiresAt: paste.expiresAt,
+    createdAt: paste.createdAt,
+    updatedAt: now,
+    files: updatedFiles,
+    requiresPassword: false,
   }
+}
 
   static async getRawContent(
-    idOrSlug: string,
-    targetFile?: string | null,
-    providedPassword?: string | null
-  ): Promise<string> {
-    CleanupService.purgeExpiredPastes()
+  idOrSlug: string,
+  targetFile ?: string | null,
+  providedPassword ?: string | null
+): Promise < string > {
+  CleanupService.purgeExpiredPastes()
     const db = getDb()
 
     const paste = db
-      .select()
-      .from(schema.pastes)
-      .where(or(eq(schema.pastes.id, idOrSlug), eq(schema.pastes.slug, idOrSlug)))
-      .get()
+    .select()
+    .from(schema.pastes)
+    .where(or(eq(schema.pastes.id, idOrSlug), eq(schema.pastes.slug, idOrSlug)))
+    .get()
 
-    if (!paste) {
-      throw ApiError.notFound('Paste not found')
-    }
+    if(!paste) {
+    throw ApiError.notFound('Paste not found')
+  }
 
-    if (paste.expiresAt && paste.expiresAt.getTime() < Date.now()) {
-      db.delete(schema.pastes).where(eq(schema.pastes.id, paste.id)).run()
-      throw ApiError.notFound('Paste has expired')
-    }
+    if(paste.expiresAt && paste.expiresAt.getTime() < Date.now()) {
+  db.delete(schema.pastes).where(eq(schema.pastes.id, paste.id)).run()
+  throw ApiError.notFound('Paste has expired')
+}
 
-    if (paste.passwordHash) {
-      if (!providedPassword || !SecurityService.verifyPassword(providedPassword, paste.passwordHash)) {
-        throw ApiError.unauthorized('Password required')
-      }
-    }
+if (paste.passwordHash) {
+  if (!providedPassword || !SecurityService.verifyPassword(providedPassword, paste.passwordHash)) {
+    throw ApiError.unauthorized('Password required')
+  }
+}
 
-    const files = db
-      .select()
-      .from(schema.pasteFiles)
-      .where(eq(schema.pasteFiles.pasteId, paste.id))
-      .orderBy(schema.pasteFiles.position)
-      .all()
+const files = db
+  .select()
+  .from(schema.pasteFiles)
+  .where(eq(schema.pasteFiles.pasteId, paste.id))
+  .orderBy(schema.pasteFiles.position)
+  .all()
 
-    if (files.length === 0) {
-      return ''
-    }
+if (files.length === 0) {
+  return ''
+}
 
-    if (paste.burnAfterRead) {
-      db.delete(schema.pastes).where(eq(schema.pastes.id, paste.id)).run()
-    }
+if (paste.burnAfterRead) {
+  db.delete(schema.pastes).where(eq(schema.pastes.id, paste.id)).run()
+}
 
-    if (targetFile) {
-      const match = files.find((f) => f.filename === targetFile || f.id === targetFile)
-      if (match) return match.content
-    }
+if (targetFile) {
+  const match = files.find((f) => f.filename === targetFile || f.id === targetFile)
+  if (match) return match.content
+}
 
-    if (files.length === 1) {
-      return files[0]?.content ?? ''
-    }
+if (files.length === 1) {
+  return files[0]?.content ?? ''
+}
 
-    return files.map((f) => `=== [${f.filename}] ===\n${f.content}`).join('\n\n')
+return files.map((f) => `=== [${f.filename}] ===\n${f.content}`).join('\n\n')
   }
 }

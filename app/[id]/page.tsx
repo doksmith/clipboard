@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState, useRef, use } from 'react'
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
 import { CodeViewer } from '@/components/snippet/code-viewer'
@@ -60,6 +60,7 @@ export default function SnippetViewerPage({
   const [passwordInput, setPasswordInput] = useState('')
   const [showBurnWarning, setShowBurnWarning] = useState(false)
   const [currentUrl, setCurrentUrl] = useState('')
+  const hasViewedRef = useRef<string | null>(null)
 
   const { decrypt } = useWebCrypto()
 
@@ -97,6 +98,21 @@ export default function SnippetViewerPage({
       setPaste(data)
       if (data.files && data.files.length > 0) {
         setActiveFileId(data.files[0].id)
+      }
+
+      // Record view count separately without cookies
+      if (!data.requiresPassword && hasViewedRef.current !== id) {
+        hasViewedRef.current = id
+        fetch(`/api/pastes/${id}/view`, { method: 'POST' })
+          .then((r) => r.json())
+          .then((res) => {
+            if (res.viewCount !== undefined) {
+              setPaste((prev) => (prev ? { ...prev, viewCount: res.viewCount } : prev))
+            }
+          })
+          .catch(() => {
+            // Non-critical background call, ignore errors
+          })
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error fetching snippet'

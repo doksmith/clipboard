@@ -159,3 +159,13 @@ export type PasteDetailResponse = z.infer<typeof PasteDetailResponseSchema>
 export type PasswordRequiredResponse = z.infer<typeof PasswordRequiredResponseSchema>
 export type CreatePasteResponse = z.infer<typeof CreatePasteResponseSchema>
 export type ListPastesResponse = z.infer<typeof ListPastesResponseSchema>
+
+export const IncrementViewResponseSchema = registry.register(
+  'IncrementViewResponse',
+  z.object({
+    success: z.boolean().openapi({ example: true }),
+    viewCount: z.number().openapi({ example: 6 }),
+  })
+)
+
+export type IncrementViewResponse = z.infer<typeof IncrementViewResponseSchema>

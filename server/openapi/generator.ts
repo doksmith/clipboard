@@ -9,6 +9,7 @@ import {
   PasteDetailResponseSchema,
   PasswordRequiredResponseSchema,
   UpdatePasteSchema,
+  IncrementViewResponseSchema,
 } from '../schemas/paste.schema'
 import { ErrorResponseSchema } from '../schemas/common.schema'
 
@@ -210,6 +211,41 @@ registry.registerPath({
     },
     404: {
       description: 'Paste not found to update',
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+  },
+})
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/pastes/{id}/view',
+  tags: ['Pastes'],
+  summary: 'Increment view counter for snippet',
+  description:
+    'Increments the view count of a paste by 1. Separated from GET to ensure idempotent queries, prevent crawler pollution, and maintain accurate view metrics.',
+  request: {
+    params: z.object({
+      id: z.string().openapi({
+        description: 'Unique paste ID or custom slug',
+        example: 'custom-slug',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'View count incremented successfully',
+      content: {
+        'application/json': {
+          schema: IncrementViewResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Paste not found or expired',
       content: {
         'application/json': {
           schema: ErrorResponseSchema,
