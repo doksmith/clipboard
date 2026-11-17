@@ -16,18 +16,18 @@ export function Navbar() {
           </Link>
 
           <nav className="hidden items-center gap-2 sm:flex">
-            <Button variant="ghost" size="sm" render={<Link href="/" />}>
+            <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/" />}>
               Studio
             </Button>
-            <Button variant="ghost" size="sm" render={<Link href="/explore" />}>
+            <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/explore" />}>
               <RiCompassLine className="mr-1 size-4" />
               Explore
             </Button>
-            <Button variant="ghost" size="sm" render={<Link href="/live/demo" />}>
+            <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/live/demo" />}>
               <RiBroadcastLine className="mr-1 size-4" />
               Live Room
             </Button>
-            <Button variant="ghost" size="sm" render={<Link href="/api" />}>
+            <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/api" />}>
               <RiBookOpenLine className="mr-1 size-4" />
               API Docs
             </Button>

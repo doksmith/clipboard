@@ -73,6 +73,7 @@ export function SnippetCard({ snippet, onQuickPreview }: SnippetCardProps) {
           variant="outline"
           size="sm"
           className="h-7 text-xs"
+          nativeButton={false}
           render={<Link href={`/${snippet.slug}`} />}
         >
           Open

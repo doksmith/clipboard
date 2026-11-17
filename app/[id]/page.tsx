@@ -185,7 +185,7 @@ export default function SnippetViewerPage({
               <div className="flex flex-wrap items-center gap-2">
                 <DiffViewer revisionsCount={1} />
                 <QrModal url={currentUrl} />
-                <Button variant="outline" size="sm" className="h-8 text-xs" render={<Link href="/" />}>
+                <Button variant="outline" size="sm" className="h-8 text-xs" nativeButton={false} render={<Link href="/" />}>
                   <RiGitForkLine className="mr-1 size-3.5" />
                   <span>Fork</span>
                 </Button>
@@ -193,6 +193,7 @@ export default function SnippetViewerPage({
                   variant="outline"
                   size="sm"
                   className="h-8 text-xs"
+                  nativeButton={false}
                   render={<a href={`/raw/${paste.slug}`} target="_blank" rel="noreferrer" />}
                 >
                   <RiTerminalBoxLine className="mr-1 size-3.5" />
@@ -222,7 +223,7 @@ export default function SnippetViewerPage({
         ) : (
           <div className="flex h-64 flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
             <p>Snippet not found or has been burned/expired.</p>
-            <Button variant="outline" size="sm" render={<Link href="/" />}>
+            <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/" />}>
               Create New Snippet
             </Button>
           </div>

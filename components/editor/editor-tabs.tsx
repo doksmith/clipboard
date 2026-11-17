@@ -82,17 +82,17 @@ export function EditorTabs({
               )}
 
               {files.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-4 opacity-40 hover:opacity-100"
+                <span
+                  role="button"
+                  tabIndex={-1}
+                  className="inline-flex size-4 items-center justify-center opacity-40 hover:opacity-100 cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation()
                     onRemoveTab(file.id)
                   }}
                 >
                   <RiCloseLine className="size-3" />
-                </Button>
+                </span>
               )}
             </TabsTrigger>
           ))}

@@ -31,6 +31,7 @@ export function PreviewDrawer({ snippet, isOpen, onClose }: PreviewDrawerProps) 
             <Button
               size="sm"
               className="h-8 text-xs"
+              nativeButton={false}
               render={<Link href={`/${snippet.slug}`} />}
             >
               <RiExternalLinkLine className="mr-1 size-3.5" />
