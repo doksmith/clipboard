@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g., v1.0.0)"
+        required: true
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Resolve Target Version
+        id: version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "target_version=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "target_version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate AI Release Notes
+        id: release_notes
+        uses: doksmith/release-notes@v1
+        with:
+          version: ${{ steps.version.outputs.target_version }}
+          provider: "gemini,groq,openai"
+          output-file: "release-notes.md"
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          groq-api-key: ${{ secrets.GROQ_API_KEY }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Publish GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.version.outputs.target_version }}
+        shell: bash
+        run: |
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            --notes-file release-notes.md \
+            --verify-tag

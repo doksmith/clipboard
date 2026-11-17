@@ -161,6 +161,23 @@ docker run -d \
 
 ---
 
+## 🏷️ Release Management
+
+Releases and changelogs are automated using [Doksmith Release Notes Generator](https://github.com/marketplace/actions/doksmith-release-notes-generator).
+
+To trigger a new official release and container publish:
+
+```bash
+# Tag a new semantic version
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+1. **GitHub Release (`release.yml`)**: Generates structured AI release notes from git history/diffs using `doksmith/release-notes@v1` and creates the GitHub release.
+2. **Container Registry (`docker-publish.yml`)**: Automatically triggers upon release publication, building and pushing multi-tag images (`:1.0.0`, `:1.0`, `:1`, `:latest`) to `ghcr.io/doksmith/clipboard`.
+
+---
+
 ## 📄 License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more details.
