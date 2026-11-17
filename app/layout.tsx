@@ -24,6 +24,16 @@ const fontMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Clipboard - Modern Realtime Code Studio",
   description: "Self-hosted realtime clipboard, code snippet hub, and collaborative scratchpad.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
 }
 
 export default function RootLayout({
