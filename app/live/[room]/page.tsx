@@ -89,21 +89,21 @@ export default function LiveRoomPage({
       <main className="flex-1 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-4">
           {/* Room Header */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
               <div className="flex items-center gap-1.5 font-bold text-foreground">
-                <RiBroadcastLine className="size-5 text-primary" />
-                <span>Room: #{room}</span>
+                <RiBroadcastLine className="size-5 text-primary shrink-0" />
+                <span className="whitespace-nowrap">Room: #{room}</span>
               </div>
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-[10px] shrink-0">
                 Collaborative
               </Badge>
               <LiveStatus latency={latency} isConnected={isConnected} />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 shrink-0">
               <PeerCursors peers={peers} />
-              <Button size="sm" onClick={handleSnapshot}>
+              <Button size="sm" onClick={handleSnapshot} className="shrink-0">
                 <RiCameraLine className="mr-1 size-3.5" />
                 <span>Snapshot Paste</span>
               </Button>
