@@ -7,6 +7,7 @@ export interface PeerUser {
   name: string
   color: string
   cursor?: { line: number; ch: number }
+  isMe?: boolean
 }
 
 const PEER_COLORS = [
@@ -58,15 +59,26 @@ export function useRealtimeRoom(roomId: string, options?: UseRealtimeRoomOptions
 
         if (type === 'connected') {
           if (payload?.currentPeers) {
-            setPeers(payload.currentPeers.filter((p: PeerUser) => p.id !== randomId))
+            setPeers(
+              payload.currentPeers.map((p: { id: string; name: string; color: string }) => ({
+                ...p,
+                isMe: p.id === randomId,
+              }))
+            )
           }
         } else if (type === 'peer:joined') {
-          if (peerId !== randomId) {
-            setPeers((prev) => {
-              if (prev.some((p) => p.id === peerId)) return prev
-              return [...prev, { id: peerId, name: payload?.name || 'Peer', color: payload?.color || '#3b82f6' }]
-            })
-          }
+          setPeers((prev) => {
+            if (prev.some((p) => p.id === peerId)) return prev
+            return [
+              ...prev,
+              {
+                id: peerId,
+                name: payload?.name || 'Peer',
+                color: payload?.color || '#3b82f6',
+                isMe: peerId === randomId,
+              },
+            ]
+          })
         } else if (type === 'peer:left') {
           setPeers((prev) => prev.filter((p) => p.id !== peerId))
         } else if (type === 'clip:synced') {

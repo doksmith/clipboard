@@ -26,7 +26,12 @@ export async function GET(
         }
       }
 
-      // 1. Send initial connected event
+      // 1. Register with the live hub FIRST so currentPeers includes this peer and join is active
+      liveHub.join(room, peerId, name, color, (msg) => {
+        send(msg)
+      })
+
+      // 2. Send initial connected event with all current peers in room
       send({
         type: 'connected',
         peerId,
@@ -35,11 +40,6 @@ export async function GET(
           currentPeers: liveHub.getPeers(room),
         },
         timestamp: Date.now(),
-      })
-
-      // 2. Register with the live hub
-      liveHub.join(room, peerId, name, color, (msg) => {
-        send(msg)
       })
 
       // 3. Keep-alive heartbeat every 15s to keep HTTP connection alive

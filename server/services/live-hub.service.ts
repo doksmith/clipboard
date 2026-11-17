@@ -32,12 +32,16 @@ class LiveRoomHub {
     room.clients.set(peerId, { callback, name, color })
 
     // Broadcast peer:joined to existing clients
-    this.broadcast(roomId, {
-      type: 'peer:joined',
-      peerId,
-      payload: { name, color },
-      timestamp: Date.now(),
-    }, peerId)
+    this.broadcast(
+      roomId,
+      {
+        type: 'peer:joined',
+        peerId,
+        payload: { name, color },
+        timestamp: Date.now(),
+      },
+      peerId
+    )
   }
 
   leave(roomId: string, peerId: string) {
