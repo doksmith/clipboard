@@ -1,5 +1,5 @@
 # ---- Dependencies Stage ----
-FROM node:22-slim AS deps
+FROM node:24-slim AS deps
 WORKDIR /app
 
 # Install native build tools required for better-sqlite3 compilation
@@ -15,7 +15,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ---- Builder Stage ----
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -29,11 +29,23 @@ ENV NODE_ENV=production
 RUN pnpm build
 
 # ---- Production Runner Stage ----
-FROM node:22-slim AS runner
+FROM node:24-slim AS runner
 WORKDIR /app
 
+# OCI Spec Annotations & Metadata arguments
+ARG VERSION=latest
+ARG REVISION=unknown
+ARG CREATED=unknown
+
 LABEL org.opencontainers.image.title="Clipboard" \
-      org.opencontainers.image.description="Self-hosted realtime clipboard and code snippet hub"
+      org.opencontainers.image.description="Self-hosted realtime clipboard and code snippet hub" \
+      org.opencontainers.image.url="https://github.com/doksmith/clipboard" \
+      org.opencontainers.image.source="https://github.com/doksmith/clipboard" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.created="${CREATED}" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="doksmith"
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

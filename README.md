@@ -111,13 +111,39 @@ Explore the interactive API playground at `/api` or inspect the OpenAPI spec at 
 
 ## 🐳 Docker Deployment
 
-The project provides an optimized multi-stage `Dockerfile` with standalone Next.js compilation and native `better-sqlite3` bindings.
+The project provides an enterprise-standard, multi-stage `Dockerfile` with standalone Next.js compilation, native `better-sqlite3` bindings, OCI Image Annotations, and automated publishing to **GitHub Container Registry (GHCR)**.
+
+### Pull Pre-built Image from GHCR
+
+You can pull the official published images directly from GHCR:
 
 ```bash
-# Build Docker image
+# Pull latest stable release
+docker pull ghcr.io/doksmith/clipboard:latest
+
+# Or pull a specific major / minor / patch version
+docker pull ghcr.io/doksmith/clipboard:1
+docker pull ghcr.io/doksmith/clipboard:1.0
+docker pull ghcr.io/doksmith/clipboard:1.0.0
+```
+
+### Run Container with Persistent Storage
+
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -v clipboard-data:/app/.data \
+  --name clipboard \
+  ghcr.io/doksmith/clipboard:latest
+```
+
+### Build Locally
+
+```bash
+# Build local Docker image
 docker build -t clipboard .
 
-# Run container with persistent SQLite volume
+# Run local container
 docker run -d \
   -p 3000:3000 \
   -v clipboard-data:/app/.data \
