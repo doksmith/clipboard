@@ -30,7 +30,6 @@ export default function LiveRoomPage({
   params: Promise<{ room: string }>
 }) {
   const { room } = use(params)
-  const { peers, latency, isConnected } = useRealtimeRoom(room)
   const router = useRouter()
 
   const [code, setCode] = useState(
@@ -38,6 +37,20 @@ export default function LiveRoomPage({
   )
   const [syntax] = useState('typescript')
   const [isWordWrap] = useState(true)
+
+  const { peers, latency, isConnected, broadcastChange } = useRealtimeRoom(
+    room,
+    {
+      onSync: (syncedContent) => {
+        setCode(syncedContent)
+      },
+    }
+  )
+
+  const handleCodeChange = (newCode: string) => {
+    setCode(newCode)
+    broadcastChange(newCode)
+  }
 
   const handleSnapshot = async () => {
     try {
@@ -104,7 +117,7 @@ export default function LiveRoomPage({
                 value={code}
                 syntax={syntax}
                 isWordWrap={isWordWrap}
-                onChange={setCode}
+                onChange={handleCodeChange}
               />
             </CardContent>
           </Card>
