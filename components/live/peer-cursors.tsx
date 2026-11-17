@@ -14,6 +14,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import type { PeerUser } from '@/hooks/use-realtime-room'
 import { RiUser3Line } from '@remixicon/react'
 
@@ -36,16 +37,12 @@ export function PeerCursors({ peers }: PeerCursorsProps) {
     const handleResize = () => {
       const width = window.innerWidth
       if (width < 640) {
-        // Mobile screen: 1 avatar (You) + More button
         setMaxAvatars(1)
       } else if (width < 960) {
-        // Small/medium screen / split-screen: 2 avatars + More button
         setMaxAvatars(2)
       } else if (width < 1280) {
-        // Standard laptop: 3 avatars + More button
         setMaxAvatars(3)
       } else {
-        // Wide desktop: up to 5 avatars + More button
         setMaxAvatars(5)
       }
     }
@@ -74,7 +71,7 @@ export function PeerCursors({ peers }: PeerCursorsProps) {
                   <button
                     type="button"
                     aria-label={peer.name}
-                    className="relative inline-flex size-6 shrink-0 items-center justify-center rounded-full ring-2 ring-background transition-transform hover:z-10 hover:scale-110 focus:outline-none"
+                    className="relative inline-flex size-6 shrink-0 items-center justify-center rounded-full ring-2 ring-background transition-transform hover:z-10 hover:scale-110 focus:outline-none focus-visible:ring-primary"
                     style={{ backgroundColor: peer.color }}
                   >
                     <span className="text-[10px] font-bold text-white uppercase select-none">
@@ -105,7 +102,7 @@ export function PeerCursors({ peers }: PeerCursorsProps) {
                         <button
                           type="button"
                           aria-label={`${overflowPeers.length} more collaborators`}
-                          className="relative inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-background text-[10px] font-bold transition-transform hover:z-10 hover:scale-110 focus:outline-none hover:bg-accent hover:text-foreground"
+                          className="relative inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-background text-[10px] font-bold transition-all hover:z-10 hover:scale-110 hover:bg-primary hover:text-primary-foreground focus:outline-none data-open:bg-primary data-open:text-primary-foreground data-open:ring-primary"
                         >
                           +{overflowPeers.length}
                         </button>
@@ -118,8 +115,8 @@ export function PeerCursors({ peers }: PeerCursorsProps) {
                 </TooltipContent>
               </Tooltip>
 
-              <PopoverContent align="end" className="w-56 p-3 text-xs">
-                <PopoverHeader className="pb-1.5 border-b mb-2">
+              <PopoverContent align="end" className="w-64 p-3 text-xs">
+                <PopoverHeader className="pb-2 border-b mb-1">
                   <PopoverTitle className="text-xs font-semibold flex items-center justify-between">
                     <span>Collaborators</span>
                     <span className="text-[10px] text-muted-foreground font-normal">
@@ -128,27 +125,33 @@ export function PeerCursors({ peers }: PeerCursorsProps) {
                   </PopoverTitle>
                 </PopoverHeader>
 
-                <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
-                  {sortedPeers.map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex items-center gap-2 rounded px-1.5 py-1 hover:bg-muted/50"
-                    >
-                      <span
-                        className="size-2 rounded-full shrink-0"
-                        style={{ backgroundColor: p.color }}
-                      />
-                      <span className="flex-1 truncate font-medium text-foreground">
-                        {p.name} {p.isMe ? '(You)' : ''}
-                      </span>
-                      {p.isMe ? (
-                        <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
-                      ) : (
-                        <RiUser3Line className="size-3 text-muted-foreground shrink-0" />
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <ScrollArea className="h-52 w-full pr-2">
+                  <div className="flex flex-col gap-1 py-1">
+                    {sortedPeers.map((p) => (
+                      <div
+                        key={p.id}
+                        className={`flex items-center gap-2 rounded px-2 py-1.5 transition-colors ${
+                          p.isMe
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'hover:bg-muted text-foreground'
+                        }`}
+                      >
+                        <span
+                          className="size-2 rounded-full shrink-0"
+                          style={{ backgroundColor: p.color }}
+                        />
+                        <span className="flex-1 truncate">
+                          {p.name} {p.isMe && '(You)'}
+                        </span>
+                        {p.isMe ? (
+                          <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        ) : (
+                          <RiUser3Line className="size-3 text-muted-foreground shrink-0" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
               </PopoverContent>
             </Popover>
           )}
